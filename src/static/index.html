@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <title>Gone With the Wind</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <meta charset="utf-8">
+        <meta name="description" content="movies and wather - what could be better">
+        <meta name="author" content="Akiva Bloch">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+        <script src="https://unpkg.com/element-ui/lib/index.js"></script>    
+    </head>
+    <body>
+        <h1>Gone with the wind</h1>
+        <div id="app">
+            <el-tabs>
+                <el-tab-pane>
+                    <span slot="label">
+                        <i class="el-icon-video-camera-solid"></i> Movies
+                    </span>
+                    <el-input placeholder="movie name" v-model="movies_needle" style="width:25em;"></el-input>
+                    <button :disabled="!movies_needle" v-on:click="fetchMovies()">Search Movies</button>
+                    <table border="1" v-if="movies_list">
+                        <tr>
+                            <th>title</th>
+                            <th>year</th>
+                            <th>poster</th>
+                        </tr>
+                        <tr v-for="movie in movies_list.movies">
+                            <td>{{movie.title}}</td>
+                            <td>{{movie.year}}</td>
+                            <td><img :src="movie.poster_url"></td>
+                        </tr>
+                    </table>
+                </el-tab-pane>
+                <el-tab-pane>
+                    <span slot="label">
+                        <i class="el-icon-umbrella"></i> weather
+                    </span>                    
+                    <el-input placeholder="location" v-model="city" style="width:15em;"></el-input>
+                    <button :disabled="!city" v-on:click="fetchWeather()">Get Waether</button>
+                    <table v-if="hourly_weather" border="1">
+                        <tr>
+                            <th>date</th>
+                            <th>forecast</th>
+                            <th>icon</th>
+                            <th>min temp</th>
+                            <th>max temp</th>
+                            <th>feels like</th>
+                        </tr>
+                        <tr v-for="hour_data in hourly_weather">
+                            <td>{{hour_data.date_str}}</td>
+                            <td>{{hour_data.description}}</td>
+                            <td>
+                                <img :src="hour_data.icon_url"/>
+                            </td>
+                            <td>{{hour_data.min_temp}}</td>
+                            <td>{{hour_data.max_temp}}</td>
+                            <td>{{hour_data.feels_like}}</td>
+                        </tr>
+                    </table>
+                </el-tab-pane>
+        </div>
+    </body>
+    <script>
+        var weatherApp = new Vue({
+          el: '#app',
+          data: {
+              city: "Jerusalem",
+              hourly_weather: null,
+              movies_needle: "Gone with the wind",
+              movies_list: null,
+          },
+          methods: {
+              fetchWeather: async function() {
+                  var response = await fetch("/weather/city/"+this.city);
+                  var json_response = await response.json();
+                  var city = json_response.city;
+                  var forecast = json_response.forecast;
+                  console.log(`fetched weather: ${JSON.stringify(forecast)}`);
+                  this.hourly_weather = forecast;
+                  this.city = `${city.city}, ${city.country}`;
+              },
+              fetchMovies: async function() {
+                  var response = await fetch("/movies/search/"+this.movies_needle);
+                  var json_response = await response.json();
+                  this.movies_list = json_response;
+              }
+
+          }
+        });
+    </script>
+</html>
