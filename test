@@ -1,5 +1,6 @@
 #!/bin/bash
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-pipenv run pylint $(find src -name "*.py")
-PYTHONPATH=${BASEDIR}/src pipenv run py.test -m tests -s
+cd  src
+pipenv run pylint $(find -name "*.py")
+PYTHONPATH=${BASEDIR}/src pipenv run py.test -s -v ${BASEDIR}/tests 

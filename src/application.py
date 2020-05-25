@@ -6,6 +6,7 @@
 from os import environ
 from logging import getLogger, basicConfig
 from sanic import Sanic
+from sanic.response import json
 from weather import blueprint as weather_blueprint
 from movies import blueprint as movies_blueprint
 
@@ -17,6 +18,9 @@ app = Sanic("gone with the wind")
 app.blueprint(weather_blueprint)
 app.blueprint(movies_blueprint)
 
+@app.route("/version")
+def version(_):
+    return json({'version': '1.0.0'})
 
 # static route for the main application
 app.static('/', './static/index.html', content_type="text/html; charset=utf-8")
