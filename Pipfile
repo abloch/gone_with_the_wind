@@ -7,14 +7,14 @@ verify_ssl = true
 pylint = "*"
 pytest = "*"
 ipdb = "*"
-aioresponses = "*"
 
 [packages]
 sanic = "*"
 aiohttp = "*"
 gunicorn = "*"
 aiohttp-requests = "*"
-aioresponses = "*"
+tenacity = "*"
+aresponses = "*"
 
 [requires]
 python_version = "3.7"

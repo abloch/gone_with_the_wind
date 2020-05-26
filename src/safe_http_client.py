@@ -4,7 +4,7 @@
 import json
 from logging import getLogger
 from aiohttp_requests import requests
-from retry import retry
+from tenacity import retry, stop_after_delay, wait_fixed
 
 _logger = getLogger(__name__)
 
@@ -29,7 +29,7 @@ async def http_get_json(url):
     return response_json
 
 
-@retry(tries=6, backoff=2)
+@retry(stop=stop_after_delay(8), wait=wait_fixed(2))  # retry up to 8 seconds, 2 seconds delay between attempts
 async def safe_http_get_json(url):
     """try really hard to fetch a json from a given url"""
     _logger.info("trying to fetch json data from [%s]", url)
