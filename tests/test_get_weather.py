@@ -22,6 +22,8 @@ def test_weather_passing_city_returns_200():
     request, response = app.test_client.get('/weather/city/real_city')
     assert response.status == 200
     assert "city" in response.json
+    assert "forecast" in response.json
+    assert isinstance(response.json['forecast'], list)
 
 @patch('weather.fetch_weather', MagicMock(return_value=future_bad_reply))
 def test_weather_failing_city_returns_500():

@@ -19,6 +19,7 @@
                     </span>
                     <el-input placeholder="movie name" v-model="movies_needle" style="width:25em;"></el-input>
                     <button :disabled="!movies_needle" v-on:click="fetchMovies()">Search Movies</button>
+                    <div v-if="loading"><i class="el-icon-loading"></i>loading ...</div>
                     <table border="1" v-if="movies_list">
                         <tr>
                             <th>title</th>
@@ -37,7 +38,8 @@
                         <i class="el-icon-umbrella"></i> weather
                     </span>                    
                     <el-input placeholder="location" v-model="city" style="width:15em;"></el-input>
-                    <button :disabled="!city" v-on:click="fetchWeather()">Get Waether</button>
+                    <button :disabled="!city || loading" v-on:click="fetchWeather()">Get Waether</button>
+                    <div v-if="loading"><i class="el-icon-loading"></i>loading ...</div>
                     <table v-if="hourly_weather" border="1">
                         <tr>
                             <th>date</th>
@@ -69,21 +71,32 @@
               hourly_weather: null,
               movies_needle: "Gone with the wind",
               movies_list: null,
+              loading:false
           },
           methods: {
               fetchWeather: async function() {
-                  var response = await fetch("/weather/city/"+this.city);
-                  var json_response = await response.json();
-                  var city = json_response.city;
-                  var forecast = json_response.forecast;
-                  console.log(`fetched weather: ${JSON.stringify(forecast)}`);
-                  this.hourly_weather = forecast;
-                  this.city = `${city.city}, ${city.country}`;
+                  this.loading = true;
+                  try {
+                    var response = await fetch("/weather/city/"+this.city);
+                    var json_response = await response.json();
+                    var city = json_response.city;
+                    var forecast = json_response.forecast;
+                    console.log(`fetched weather: ${JSON.stringify(forecast)}`);
+                    this.hourly_weather = forecast;
+                    this.city = `${city.city}, ${city.country}`;
+                  } finally {
+                    this.loading = false;
+                  }
               },
               fetchMovies: async function() {
-                  var response = await fetch("/movies/search/"+this.movies_needle);
-                  var json_response = await response.json();
-                  this.movies_list = json_response;
+                  this.loading = true;
+                  try {
+                    var response = await fetch("/movies/search/"+this.movies_needle);
+                    var json_response = await response.json();
+                    this.movies_list = json_response;
+                  } finally {
+                      this.loading = false;
+                  }
               }
 
           }
