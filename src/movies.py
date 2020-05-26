@@ -72,8 +72,8 @@ async def search(request, needle):
 
     except NotFoundException as error:
         _logger.exception(error)
-        raise ServerError(error, status_code=404)
+        raise ServerError("movie not found", status_code=404)
 
     except Exception as error:
         _logger.exception(error)
-        raise ServerError("internal server error", status_code=500)
+        raise ServerError("error fetching movies. please try again later", status_code=500)
