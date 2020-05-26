@@ -13,6 +13,7 @@ FAKE_BAD_REPLY = json.load(open("{}/fixtures/fake_bad_weather.json".format(curre
 
 future_reply = asyncio.Future()
 future_reply.set_result(FAKE_REPLY)
+
 future_bad_reply = asyncio.Future()
 future_bad_reply.set_result(FAKE_BAD_REPLY)
 
@@ -27,7 +28,7 @@ def test_weather_found_returns_200():
 
 
 @patch('weather.fetch_weather', MagicMock(return_value=future_bad_reply))
-def test_weather_unfound_returns_200():
+def test_weather_unfound_returns_500():
     request, response = app.test_client.get('/weather/city/real_city')
     assert response.status == 500
     assert "try again" in response.text

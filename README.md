@@ -11,4 +11,4 @@ install [pipenv](https://github.com/pypa/pipenv) and run:
 ## design considerations:
 - prefer libraries over inventing the wheel
 - as safe as possible url fetching 
-- use asyncio to prevent blocking while a 
+- use asyncio to prevent blocking while another call is in proccess
