@@ -7,6 +7,8 @@ from sanic.response import json
 from sanic.exceptions import ServerError
 from safe_http_client import safe_http_get_json
 from custom_exceptions import NotFoundException
+
+
 APP_ID = "c2152ce33eec94f628bcb40cda3da446"
 BASE_URL = "https://api.openweathermap.org"
 
@@ -15,9 +17,11 @@ blueprint = Blueprint(__name__, url_prefix="/weather")
 
 
 async def fetch_weather(city):
-    """get wather for a prticular city"""
+    """get weather for a prticular city"""
     url = f"{BASE_URL}/data/2.5/forecast?q={city}&units=metric&appid={APP_ID}"
-    ret = await safe_http_get_json(url)
+    ret = await safe_http_get_json(url, acceptable_codes=[404, 200])
+    if ret.get("message") == "city not found":
+        raise NotFoundException("city not found")
     _logger.info("weather data was successfully fetched from %s", url)
     return ret
 
@@ -79,7 +83,7 @@ async def weather(_, city):
 
     except NotFoundException as error:
         _logger.exception(error)
-        raise ServerError(f"city {city} was not found")
+        return json({"error": "city was not found", "city": city})
 
     except Exception as error:
         _logger.exception("error %s getting weather for %s", error, city)

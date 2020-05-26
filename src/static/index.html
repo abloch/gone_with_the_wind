@@ -12,6 +12,7 @@
     <body>
         <h1>Gone with the wind</h1>
         <div id="app">
+            <el-alert :title="error" type="error" v-if="error" closable="false"></el-alert>
             <el-tabs>
                 <el-tab-pane>
                     <span slot="label">
@@ -71,7 +72,8 @@
               hourly_weather: null,
               movies_needle: "Gone with the wind",
               movies_list: null,
-              loading:false
+              loading:false,
+              error: null
           },
           methods: {
               fetchWeather: async function() {
@@ -79,11 +81,18 @@
                   try {
                     var response = await fetch("/weather/city/"+this.city);
                     var json_response = await response.json();
+                    if ("error" in json_response) {
+                        throw json_response.error;
+                    }
                     var city = json_response.city;
                     var forecast = json_response.forecast;
                     console.log(`fetched weather: ${JSON.stringify(forecast)}`);
                     this.hourly_weather = forecast;
                     this.city = `${city.city}, ${city.country}`;
+                    this.error = null;
+                  } catch (err) {
+                    this.error = err;
+                    console.error(err);
                   } finally {
                     this.loading = false;
                   }

@@ -29,8 +29,17 @@ async def test_safe_mocked_error_response_eventually_passes(aresponses):
 
 @pytest.mark.asyncio
 async def test_safe_mocked_error_response_eventually_fails(aresponses):
-    # first try will fail - second try will pass. should pass
+    # when all calls fail it should fail
     aresponses.add("blabla", "/", "GET", aresponses.Response(status=500, text="Error"))
     with pytest.raises(Exception):
         response = await safe_http_get_json('http://blabla/')
     aresponses.assert_called_in_order()
+
+
+@pytest.mark.asyncio
+async def test_mocked__acceptable_error_response_passes(aresponses):
+    # when failure is acceptable - pass
+    aresponses.add("blabla", "/", "GET", aresponses.Response(status=500, body=b'{"error": "true"}', headers={"Content-Type": "application/json"}))
+    response = await http_get_json('http://blabla', acceptable_codes=[500])
+    aresponses.assert_called_in_order()
+    assert "error" in response 

@@ -5,4 +5,4 @@ pipenv run pylint $(find src -name "*.py")
 
 cd ${BASEDIR}/src
 PYTHONPATH=${BASEDIR}/src pipenv run py.test ${BASEDIR}/tests --cov-report="html" --cov=${PWD}
-mv htmlcov ..
+mv htmlcov/* ../htmlcov/
