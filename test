@@ -3,5 +3,6 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 pipenv run pylint $(find src -name "*.py")
 
-cd src
-PYTHONPATH=${BASEDIR}/src pipenv run py.test ${BASEDIR}/tests --cov-report html --cov=${PWD}
+cd ${BASEDIR}/src
+PYTHONPATH=${BASEDIR}/src pipenv run py.test ${BASEDIR}/tests --cov-report="html" --cov=${PWD}
+mv htmlcov ..
