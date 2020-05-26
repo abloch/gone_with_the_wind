@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import pytest
 from aioresponses import aioresponses
 from application import app
 

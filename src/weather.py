@@ -5,8 +5,8 @@ from logging import getLogger
 from sanic import Blueprint
 from sanic.response import json
 from sanic.exceptions import ServerError
-from aiohttp_requests import requests
-
+from safe_http_client import safe_http_get_json
+from custom_exceptions import NotFoundException
 APP_ID = "c2152ce33eec94f628bcb40cda3da446"
 BASE_URL = "https://api.openweathermap.org"
 
@@ -17,10 +17,9 @@ blueprint = Blueprint(__name__, url_prefix="/weather")
 async def fetch_weather(city):
     """get wather for a prticular city"""
     url = f"{BASE_URL}/data/2.5/forecast?q={city}&units=metric&appid={APP_ID}"
-    _logger.warning("fetching %s", url)
-    response = await requests.get(url)
-    response_json = await response.json()
-    return response_json
+    ret = await safe_http_get_json(url)
+    _logger.info("weather data was successfully fetched from %s", url)
+    return ret
 
 
 def get_icon_url(icon_code):
@@ -32,7 +31,7 @@ def get_icon_url(icon_code):
 
 def format_forecast(raw_weather):
     """
-
+        formats a single format line
         https://openweathermap.org/api/hourly-forecast
     """
     return {
@@ -74,5 +73,14 @@ async def weather(_, city):
     """
         fethces the forecast for a given city
     """
-    response = await fetch_weather(city)
-    return json(format_response(response))
+    try:
+        response = await fetch_weather(city)
+        return json(format_response(response))
+
+    except NotFoundException as error:
+        _logger.exception(error)
+        raise ServerError(f"city {city} was not found")
+
+    except Exception as error:
+        _logger.exception("error %s getting weather for %s", error, city)
+        raise ServerError(f"could not get weather for {city}. please try again later")

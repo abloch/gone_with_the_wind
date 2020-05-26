@@ -20,6 +20,7 @@ app.blueprint(movies_blueprint)
 
 @app.route("/version")
 def version(_):
+    """application version"""
     return json({'version': '1.0.0'})
 
 # static route for the main application

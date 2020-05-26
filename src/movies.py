@@ -5,7 +5,7 @@ from logging import getLogger
 from sanic import Blueprint
 from sanic.response import json
 from sanic.exceptions import ServerError
-from aiohttp_requests import requests
+from safe_http_client import safe_http_get_json
 from custom_exceptions import NotFoundException
 
 APP_KEY = "dce24c91"
@@ -18,13 +18,10 @@ blueprint = Blueprint(__name__, url_prefix="/movies")
 async def search_movies(needle, page_num):
     """search movies by title's needle"""
     url = f"{BASE_URL}/?s={needle}&type=movie&page=${page_num}&apikey={APP_KEY}"
-    _logger.info("fetching %s", url)
-    response = await requests.get(url)
-    response_json = await response.json()
-    if not response_json.get("Response") == "True":
-        _logger.exception("wrong reply [%s]", response_json)
-        raise NotFoundException(response_json.get("Error", f"error fetching {url}"))
-    return response_json
+    ret = await safe_http_get_json(url)
+    _logger.info("movies data was successfully fetched from %s", url)
+    return ret
+
 
 def format_movies_list(movies_list):
     """formats the movies list"""
@@ -46,7 +43,8 @@ def format_response(response, page_num, needle):
         movies_in_this_page = len(response.get("Search"))
         total_matches = int(response.get("totalResults"))
         prev_page = page_num -1 if page_num > 1 else None
-        next_page = page_num + 1 if total_matches > page_num*movies_per_page + movies_in_this_page else None
+        pages_so_far = page_num*movies_per_page + movies_in_this_page
+        next_page = page_num + 1 if total_matches > pages_so_far else None
         return {
             "movies": format_movies_list(response.get("Search")),
             "metadata": {
@@ -59,7 +57,7 @@ def format_response(response, page_num, needle):
             }
         }
     _logger.error("no Search in %s", response.keys())
-    raise NotFoundException("could not find movies in")
+    raise NotFoundException(f"could not find movies in {needle}")
 
 
 @blueprint.route("/search/<needle>")
